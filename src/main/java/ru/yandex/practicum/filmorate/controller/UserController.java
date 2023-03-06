@@ -6,21 +6,18 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private int idUser = 2;
-    private final Map<Integer, User> users = new HashMap<>(Map.of(
-            1, new User(1, "admin@mail.ru", "admin", "admin", LocalDate.now())));
+    private int idUser = 1;
+    private final Map<Integer, User> users = new HashMap<>();
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
