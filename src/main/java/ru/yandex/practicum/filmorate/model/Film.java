@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.constraint.DateRelease;
 
@@ -14,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Film {
 
-    @EqualsAndHashCode.Exclude
+    @Null
     private Integer id;
 
     @NotBlank(message = "Title of film can must be not empty")
