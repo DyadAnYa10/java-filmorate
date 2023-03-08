@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FilmControllerTest {
 
     private FilmController filmController;
+    private FilmService filmService;
     private Film film;
     private static Validator validator;
 
@@ -27,7 +29,8 @@ public class FilmControllerTest {
     @BeforeEach
     void init(){
         film = new Film(null, "Title film", "Description film", LocalDate.now(), 60);
-        filmController = new FilmController();
+        filmService = new FilmService();
+        filmController = new FilmController(filmService);
     }
 
     @Test

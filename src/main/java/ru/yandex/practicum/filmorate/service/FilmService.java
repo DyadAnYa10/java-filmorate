@@ -19,7 +19,13 @@ public class FilmService {
     public Film addFilm(Film film){
         log.info("Request add new Film");
 
-        if (films.values().stream().anyMatch(filmSaved -> filmSaved.equals(film))) {
+        if (films.values()
+                .stream()
+                .anyMatch(filmSaved ->
+                    filmSaved.getName().equals(film.getName()) &&
+                            filmSaved.getDescription().equals(film.getDescription()) &&
+                            filmSaved.getReleaseDate().equals(film.getReleaseDate()) &&
+                            filmSaved.getDuration().equals(film.getDuration()))) {
             log.error("Film already exist");
             throw new ValidationException("Film  already exist");
         }

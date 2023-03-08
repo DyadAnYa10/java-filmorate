@@ -27,6 +27,6 @@ public class Film {
     private LocalDate releaseDate;
 
     @Positive(message = "Duration of film must be positive value")
-    private int duration;
+    private Integer duration;
 
 }
