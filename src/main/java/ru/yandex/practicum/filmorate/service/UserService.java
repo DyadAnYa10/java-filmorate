@@ -50,7 +50,7 @@ public class UserService {
             throw new ValidationException("Invalid id='" + user.getId() + "' of updatable user");
         }
 
-        if (users.get(user.getId()) == null) {
+        if (!users.containsKey(user.getId())) {
             log.error("User with id='" + user.getId() + "' is not exist");
             throw new ValidationException("Invalid user id='" + user.getId() + "' of updatable user");
         }

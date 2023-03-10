@@ -45,8 +45,8 @@ public class FilmService {
             throw new ValidationException("Invalid film id='" + film.getId() + "' of updatable user");
         }
 
-        if (films.get(film.getId()) == null) {
-            log.error("Film with id='" + film.getId() + "'' s not exist");
+        if (!films.containsKey(film.getId())) {
+            log.error("Film with id='" + film.getId() + "'' s not exists");
             throw new ValidationException("Invalid id='" + film.getId() + "' of updatable user");
         }
 
