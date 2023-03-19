@@ -89,8 +89,10 @@ public class UserService {
         Set<Integer> userFriendsIds = user.getFriends();
         Set<Integer> otherUserFriendsIds = otherUser.getFriends();
 
-        userFriendsIds.retainAll(otherUserFriendsIds);
+        Set<Integer> common = new HashSet<>(userFriendsIds);
 
-        return userStorage.getUsersByIds(userFriendsIds);
+        common.retainAll(otherUserFriendsIds);
+
+        return userStorage.getUsersByIds(common);
     }
 }
