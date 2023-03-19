@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class UserController {
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        return userService.addUser(user);
+        return userService.createUser(user);
     }
 
     @PutMapping
@@ -44,13 +43,17 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable Integer id,
-                             @PathVariable Integer friendId) {
+    public void deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("{id}/friends")
-    public Set<Integer> getFriends(@PathVariable Integer id){
+    public List<User> getFriends(@PathVariable Integer id) {
         return userService.getFriendsByUserId(id);
+    }
+
+    @GetMapping("{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }

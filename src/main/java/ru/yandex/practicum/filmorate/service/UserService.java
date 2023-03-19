@@ -3,15 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
@@ -20,8 +15,7 @@ import java.util.*;
 public class UserService {
     private final UserStorage userStorage;
 
-    @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public User createUser(User user) {
         log.info("Request add new User");
         User newUser;
         try {
@@ -30,12 +24,11 @@ public class UserService {
             log.error(exception.getMessage());
             throw exception;
         }
-        log.info("Successful added new user {}", newUser);
+        log.info("Added new user {}", newUser);
         return newUser;
     }
 
-    @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(User user) {
         log.info("Request update user");
         User updatableUser;
         try {
@@ -48,7 +41,6 @@ public class UserService {
         return updatableUser;
     }
 
-    @GetMapping
     public List<User> getAllUsers() {
         log.info("Request get all users");
         return userStorage.getAllUsers();
@@ -65,31 +57,40 @@ public class UserService {
         User foundUser = getUserById(userId);
         User foundFriend = getUserById(friendId);
 
-        foundFriend.addFriend(friendId);
-        foundUser.addFriend(userId);
-
-        log.info("Friend Success added");
+        foundUser.addFriend(friendId);
+        foundFriend.addFriend(userId);
     }
 
     public void deleteFriend(Integer userId, Integer friendId) {
         log.info("Request delete friend");
 
-        User foundUser = getUserById(userId);
-        User foundFriend = getUserById(friendId);
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
 
-        foundFriend.deleteFriend(friendId);
-        foundUser.deleteFriend(userId);
-
-        log.info("Friend Success deleted");
+        friend.deleteFriend(friendId);
+        user.deleteFriend(userId);
     }
 
-    public Set<Integer> getFriendsByUserId(Integer userId) {
-        log.info("Request delete friend");
+    public List<User> getFriendsByUserId(Integer userId) {
+        log.info("Request get friend user by id");
 
         User user = getUserById(userId);
 
-        log.info("Friend Success deleted");
-        return user.getFriends();
+        return userStorage.getUsersByIds(user.getFriends());
     }
 
+    public List<User> getCommonFriends(Integer id, Integer otherId) {
+        log.info("Request get common friends by id");
+
+        User user = getUserById(id);
+
+        User otherUser = getUserById(otherId);
+
+        Set<Integer> userFriendsIds = user.getFriends();
+        Set<Integer> otherUserFriendsIds = otherUser.getFriends();
+
+        userFriendsIds.retainAll(otherUserFriendsIds);
+
+        return userStorage.getUsersByIds(userFriendsIds);
+    }
 }

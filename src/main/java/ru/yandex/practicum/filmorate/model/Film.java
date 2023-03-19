@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,7 @@ public class Film {
     @Positive(message = "Duration of film must be positive value")
     private Integer duration;
 
+    @JsonIgnore
     private final Set<Integer> userLikes = new HashSet<>();
 
     @Override

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class User {
     @PastOrPresent(message = "Birthday must be in the past, not future")
     private LocalDate birthday;
 
+    @JsonIgnore
     private final Set<Integer> friends = new HashSet<>();
 
     public void addFriend(Integer id){

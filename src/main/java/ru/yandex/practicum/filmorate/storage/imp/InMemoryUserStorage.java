@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+
 import java.util.*;
 
 @Component
@@ -56,6 +57,17 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public List<User> getUsersByIds(Set<Integer> usersIds) {
+        List<User> foundUsers = new ArrayList<>();
+
+        for (Integer id : usersIds) {
+            foundUsers.add(users.get(id));
+        }
+
+        return foundUsers;
     }
 
 }
