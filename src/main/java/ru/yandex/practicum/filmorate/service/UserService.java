@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,61 +9,87 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private int idUser = 1;
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserStorage userStorage;
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Request add new User");
-
-        if (users.values().stream().anyMatch(userSaved -> userSaved.getLogin().equals(user.getLogin()))) {
-            log.error("User with login {} already exist", user.getLogin());
-            throw new ValidationException("User with login='" + user.getLogin() + "' already exist");
+        User newUser;
+        try {
+            newUser = userStorage.create(user);
+        } catch (ValidationException exception) {
+            log.error(exception.getMessage());
+            throw exception;
         }
-        user.setId(idUser++);
-
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-
-        users.put(user.getId(), user);
-
-        log.info("Successful added new user: {}", user);
-        return user;
+        log.info("Successful added new user {}", newUser);
+        return newUser;
     }
 
     @PutMapping
     public User updateUser(@RequestBody User user) {
         log.info("Request update user");
-
-        if (user.getId() == null || user.getId() <= 0) {
-            log.error("Id updatable user must not be null or less than 1");
-            throw new ValidationException("Invalid id='" + user.getId() + "' of updatable user");
+        User updatableUser;
+        try {
+            updatableUser = userStorage.update(user);
+        } catch (ValidationException exception) {
+            log.error(exception.getMessage());
+            throw exception;
         }
-
-        if (!users.containsKey(user.getId())) {
-            log.error("User with id='" + user.getId() + "' is not exist");
-            throw new ValidationException("Invalid user id='" + user.getId() + "' of updatable user");
-        }
-
-        users.put(user.getId(), user);
-        log.info("Successful updated user {}", user);
-        return user;
+        log.info("Updatable user {}", user);
+        return updatableUser;
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        log.info("Returned get all users");
-        return new ArrayList<>(users.values());
+        log.info("Request get all users");
+        return userStorage.getAllUsers();
     }
+
+    public User getUserById(Integer id) {
+        return userStorage.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User with id='" + id + "' not found"));
+    }
+
+    public void addFriend(Integer userId, Integer friendId) {
+        log.info("Request add friend");
+
+        User foundUser = getUserById(userId);
+        User foundFriend = getUserById(friendId);
+
+        foundFriend.addFriend(friendId);
+        foundUser.addFriend(userId);
+
+        log.info("Friend Success added");
+    }
+
+    public void deleteFriend(Integer userId, Integer friendId) {
+        log.info("Request delete friend");
+
+        User foundUser = getUserById(userId);
+        User foundFriend = getUserById(friendId);
+
+        foundFriend.deleteFriend(friendId);
+        foundUser.deleteFriend(userId);
+
+        log.info("Friend Success deleted");
+    }
+
+    public Set<Integer> getFriendsByUserId(Integer userId) {
+        log.info("Request delete friend");
+
+        User user = getUserById(userId);
+
+        log.info("Friend Success deleted");
+        return user.getFriends();
+    }
+
 }

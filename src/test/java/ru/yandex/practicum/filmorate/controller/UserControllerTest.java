@@ -3,9 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.imp.InMemoryUserStorage;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -17,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserControllerTest {
     private static Validator validator;
     private UserController userController;
-    private UserService userService;
     private User user;
 
     @BeforeAll
@@ -28,7 +28,8 @@ public class UserControllerTest {
     @BeforeEach
     void init(){
         user = new User(null, "user@mail.ru", "userLogin", "userName", LocalDate.now());
-        userService = new UserService();
+        UserStorage userStorage = new InMemoryUserStorage();
+        UserService userService = new UserService(userStorage);
         userController = new UserController(userService);
     }
 
@@ -93,7 +94,7 @@ public class UserControllerTest {
         userController.addUser(user);
 
         user.setId(null);
-        assertThrows(ValidationException.class, () -> userController.updateUser(user),
+        assertThrows(IllegalArgumentException.class, () -> userController.updateUser(user),
                 "Не возникло ошибки при создании пользователя с id = null");
     }
 
@@ -102,7 +103,7 @@ public class UserControllerTest {
         userController.addUser(user);
 
         user.setId(-5);
-        assertThrows(ValidationException.class, () -> userController.updateUser(user),
+        assertThrows(IllegalArgumentException.class, () -> userController.updateUser(user),
                 "Не возникло ошибки при создании пользователя с отрицательным значением id");
     }
 
@@ -112,7 +113,7 @@ public class UserControllerTest {
 
         User newUser = new User(null, "user1@mail.ru", "userLogin", "userName", LocalDate.now());
 
-        assertThrows(ValidationException.class, () -> userController.updateUser(newUser),
+        assertThrows(IllegalArgumentException.class, () -> userController.updateUser(newUser),
                 "Не возникло ошибки при обновлении пользователя с уже имеющимся в базе логином");
     }
 
@@ -122,7 +123,7 @@ public class UserControllerTest {
 
         User newUser = new User(10, "user@mail.ru", "userLogin1", "userName", LocalDate.now());
 
-        assertThrows(ValidationException.class, () -> userController.updateUser(newUser),
+        assertThrows(IllegalArgumentException.class, () -> userController.updateUser(newUser),
                 "Не возникло ошибки при обновлении пользователя с id, которого в базе нет");
     }
 }

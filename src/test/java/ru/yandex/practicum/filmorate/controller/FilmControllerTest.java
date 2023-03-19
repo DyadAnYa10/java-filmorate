@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.imp.InMemoryFilmStorage;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -17,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FilmControllerTest {
 
     private FilmController filmController;
-    private FilmService filmService;
     private Film film;
     private static Validator validator;
 
@@ -29,7 +30,8 @@ public class FilmControllerTest {
     @BeforeEach
     void init(){
         film = new Film(null, "Title film", "Description film", LocalDate.now(), 60);
-        filmService = new FilmService();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmService filmService = new FilmService(filmStorage);
         filmController = new FilmController(filmService);
     }
 
@@ -114,7 +116,7 @@ public class FilmControllerTest {
 
         Film newFilm = new Film(null, "Title film", "Description film", LocalDate.now(), 60);
 
-        assertThrows(ValidationException.class, () -> filmController.updateFilm(newFilm),
+        assertThrows(IllegalArgumentException.class, () -> filmController.updateFilm(newFilm),
                 "Не возникло ошибки при обновлении фильма с id = null");
     }
 
@@ -124,7 +126,7 @@ public class FilmControllerTest {
 
         Film newFilm = new Film(-5, "Title film", "Description film", LocalDate.now(), 60);
 
-        assertThrows(ValidationException.class, () -> filmController.updateFilm(newFilm),
+        assertThrows(IllegalArgumentException.class, () -> filmController.updateFilm(newFilm),
                 "Не возникло ошибки при обновлении фильма с некорректным значением id");
     }
 
@@ -134,7 +136,7 @@ public class FilmControllerTest {
 
         Film newFilm = new Film(10, "Title film", "Description film", LocalDate.now(), 60);
 
-        assertThrows(ValidationException.class, () -> filmController.updateFilm(newFilm),
+        assertThrows(IllegalArgumentException.class, () -> filmController.updateFilm(newFilm),
                 "Не возникло ошибки при обновлении фильма со значением id, которого нет в базе");
     }
 
