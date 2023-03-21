@@ -19,7 +19,7 @@ public class User {
     private Integer id;
 
     @NotBlank(message = "Email must be not empty and not null")
-    @Email
+    @Email(message = "Email must be format email address: example@google.com")
     private String email;
 
     @NotBlank(message = "Login must be not empty and not null")

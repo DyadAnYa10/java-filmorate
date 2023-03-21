@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.imp;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -8,6 +9,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
@@ -19,6 +21,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.values()
                 .stream()
                 .anyMatch(filmSaved -> (filmSaved.equals(film)))) {
+            log.error("Film {} already exists", film);
             throw new ValidationException("Film already exists");
         }
 
@@ -32,11 +35,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film film) {
 
         if (film.getId() == null || film.getId() <= 0) {
-            throw new IllegalArgumentException("Invalid film id='" + film.getId() + "' of updatable user");
+            log.error("Invalid film id={}", film.getId());
+            throw new IllegalArgumentException("Invalid film id='" + film.getId() + "' of updatable film");
         }
 
         if (!films.containsKey(film.getId())) {
-            throw new IllegalArgumentException("Invalid id='" + film.getId() + "' of updatable user");
+            log.error("Invalid film id={}", film.getId());
+            throw new IllegalArgumentException("Invalid id='" + film.getId() + "' of updatable film");
         }
 
         films.put(film.getId(), film);

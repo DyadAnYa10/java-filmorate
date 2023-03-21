@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.imp;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -8,6 +9,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
+@Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
@@ -21,7 +23,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.values()
                 .stream()
                 .anyMatch(userSaved -> userSaved.getLogin().equals(user.getLogin()))) {
-
+            log.error("User with login='" + user.getLogin() + "' already exist");
             throw new ValidationException("User with login='" + user.getLogin() + "' already exist");
         }
         user.setId(idUser++);

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -23,14 +22,7 @@ public class FilmService {
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Request add new Film");
 
-        Film createdFilm;
-
-        try {
-            createdFilm = filmStorage.create(film);
-        } catch (ValidationException exception) {
-            log.error(exception.getMessage());
-            throw exception;
-        }
+        Film createdFilm = filmStorage.create(film);
 
         log.info("Added new Film {}", film);
         return createdFilm;
@@ -38,13 +30,7 @@ public class FilmService {
 
     public Film updateFilm(@RequestBody Film film) {
         log.info("Request update film");
-        Film updatableFilm;
-        try {
-            updatableFilm = filmStorage.update(film);
-        } catch (ValidationException exception) {
-            log.error(exception.getMessage());
-            throw exception;
-        }
+        Film updatableFilm = filmStorage.update(film);
         log.info("Updatable film {}", film);
         return updatableFilm;
     }
