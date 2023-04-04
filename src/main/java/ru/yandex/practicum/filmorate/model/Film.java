@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,9 @@ import ru.yandex.practicum.filmorate.constraint.DateRelease;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -29,4 +33,25 @@ public class Film {
     @Positive(message = "Duration of film must be positive value")
     private Integer duration;
 
+    @JsonIgnore
+    private final Set<Integer> userLikes = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Film film = (Film) o;
+        return Objects.equals(name, film.name)
+                && Objects.equals(description, film.description)
+                && Objects.equals(releaseDate, film.releaseDate)
+                && Objects.equals(duration, film.duration);
+    }
+
+    public void addLike(Integer idUser){
+        userLikes.add(idUser);
+    }
+
+    public void deleteLike(Integer idUser) {
+        userLikes.remove(idUser);
+    }
 }

@@ -1,62 +1,61 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class FilmService {
-    private int idFilm = 1;
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final FilmStorage filmStorage;
+    private final UserService userService;
 
-    public Film addFilm(Film film){
+    public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Request add new Film");
 
-        if (films.values()
-                .stream()
-                .anyMatch(filmSaved ->
-                    filmSaved.getName().equals(film.getName()) &&
-                            filmSaved.getDescription().equals(film.getDescription()) &&
-                            filmSaved.getReleaseDate().equals(film.getReleaseDate()) &&
-                            filmSaved.getDuration().equals(film.getDuration()))) {
-            log.error("Film already exist");
-            throw new ValidationException("Film  already exist");
-        }
+        Film createdFilm = filmStorage.create(film);
 
-        film.setId(idFilm++);
-        films.put(film.getId(), film);
-
-        log.info("Successful added new Film {}", film);
-        return film;
+        log.info("Added new Film {}", film);
+        return createdFilm;
     }
 
-    public Film updateFilm(Film film){
+    public Film updateFilm(@RequestBody Film film) {
         log.info("Request update film");
+        Film updatableFilm = filmStorage.update(film);
+        log.info("Updatable film {}", film);
+        return updatableFilm;
+    }
 
-        if (film.getId() == null || film.getId() <= 0) {
-            log.error("Id updatable user must not be null or less than 1");
-            throw new ValidationException("Invalid film id='" + film.getId() + "' of updatable user");
-        }
-
-        if (!films.containsKey(film.getId())) {
-            log.error("Film with id='" + film.getId() + "'' s not exists");
-            throw new ValidationException("Invalid id='" + film.getId() + "' of updatable user");
-        }
-
-        films.put(film.getId(), film);
-        log.info("Successful updated film {}", film);
-        return film;
+    public Film getFilmById(Integer id) {
+        return filmStorage.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Film with id='" + id + "' not found"));
     }
 
     public List<Film> getAllFilms() {
-        log.info("Returned get all films");
-        return new ArrayList<>(films.values());
+        return filmStorage.getAllFilms();
+    }
+
+    public void addLikeByFilmId(Integer filmId, Integer userId) {
+        Film film = getFilmById(filmId);
+        film.addLike(userId);
+    }
+
+    public void deleteLikeByFilmId(Integer filmId, Integer userId) {
+        Film film = getFilmById(filmId);
+        userService.getUserById(userId);
+        film.deleteLike(userId);
+    }
+
+    public List<Film> getPopularFilms(Integer count) {
+        return filmStorage.findPopularFilms(count);
     }
 }

@@ -1,68 +1,85 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private int idUser = 1;
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserStorage userStorage;
 
-    @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public User createUser(User user) {
         log.info("Request add new User");
-
-        if (users.values().stream().anyMatch(userSaved -> userSaved.getLogin().equals(user.getLogin()))) {
-            log.error("User with login {} already exist", user.getLogin());
-            throw new ValidationException("User with login='" + user.getLogin() + "' already exist");
-        }
-        user.setId(idUser++);
-
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-
-        users.put(user.getId(), user);
-
-        log.info("Successful added new user: {}", user);
-        return user;
+        User newUser = userStorage.create(user);
+        log.info("Added new user {}", newUser);
+        return newUser;
     }
 
-    @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(User user) {
         log.info("Request update user");
-
-        if (user.getId() == null || user.getId() <= 0) {
-            log.error("Id updatable user must not be null or less than 1");
-            throw new ValidationException("Invalid id='" + user.getId() + "' of updatable user");
-        }
-
-        if (!users.containsKey(user.getId())) {
-            log.error("User with id='" + user.getId() + "' is not exist");
-            throw new ValidationException("Invalid user id='" + user.getId() + "' of updatable user");
-        }
-
-        users.put(user.getId(), user);
-        log.info("Successful updated user {}", user);
-        return user;
+        User updatableUser = userStorage.update(user);
+        log.info("Updatable user {}", user);
+        return updatableUser;
     }
 
-    @GetMapping
     public List<User> getAllUsers() {
-        log.info("Returned get all users");
-        return new ArrayList<>(users.values());
+        log.info("Request get all users");
+        return userStorage.getAllUsers();
+    }
+
+    public User getUserById(Integer id) {
+        return userStorage.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User with id='" + id + "' not found"));
+    }
+
+    public void addFriend(Integer userId, Integer friendId) {
+        log.info("Request add friend");
+
+        User foundUser = getUserById(userId);
+        User foundFriend = getUserById(friendId);
+
+        foundUser.addFriend(friendId);
+        foundFriend.addFriend(userId);
+    }
+
+    public void deleteFriend(Integer userId, Integer friendId) {
+        log.info("Request delete friend");
+
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+
+        friend.deleteFriend(friendId);
+        user.deleteFriend(userId);
+    }
+
+    public List<User> getFriendsByUserId(Integer userId) {
+        log.info("Request get friend user by id");
+
+        User user = getUserById(userId);
+
+        return userStorage.getUsersByIds(user.getFriends());
+    }
+
+    public List<User> getCommonFriends(Integer id, Integer otherId) {
+        log.info("Request get common friends by id");
+
+        User user = getUserById(id);
+
+        User otherUser = getUserById(otherId);
+
+        Set<Integer> userFriendsIds = user.getFriends();
+        Set<Integer> otherUserFriendsIds = otherUser.getFriends();
+
+        Set<Integer> common = new HashSet<>(userFriendsIds);
+
+        common.retainAll(otherUserFriendsIds);
+
+        return userStorage.getUsersByIds(common);
     }
 }
