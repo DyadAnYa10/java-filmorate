@@ -1,57 +1,55 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.yandex.practicum.filmorate.constraint.DateRelease;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Film {
 
-    @Null
-    private Integer id;
+    @EqualsAndHashCode.Exclude
+    @JsonIgnore
+    private Set<Long> userLikes = new HashSet<>();
 
-    @NotBlank(message = "Title of film can must be not empty")
+    @EqualsAndHashCode.Exclude
+    private Long id;
+
+    @NotBlank(message = "Title of film must be not empty")
     private String name;
 
-    @Size(min = 10, max = 200, message = "Length of film description mist be: max = 200 characters, min = 10 characters")
-    @NotNull
+    @Size(min = 10, max = 200, message = "Length of film description: max = 200 and min = 10")
+    @NotNull(message = "Description of film must be not null")
     private String description;
 
-    @DateRelease(day = 28, month = 12, year = 1895, message = "Date of release must be after than 28 December 1895")
+    @DateRelease(day = 28, month = 12, year = 1895, message = "Date of release must be after 28 December 1895")
     private LocalDate releaseDate;
 
     @Positive(message = "Duration of film must be positive value")
-    private Integer duration;
+    private Long duration;
 
-    @JsonIgnore
-    private final Set<Integer> userLikes = new HashSet<>();
+    @EqualsAndHashCode.Exclude
+    private Rating mpa;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Film film = (Film) o;
-        return Objects.equals(name, film.name)
-                && Objects.equals(description, film.description)
-                && Objects.equals(releaseDate, film.releaseDate)
-                && Objects.equals(duration, film.duration);
-    }
+    @EqualsAndHashCode.Exclude
+    private Set<Genre> genres = new HashSet<>();
 
-    public void addLike(Integer idUser){
+    public void addLike(Long idUser) {
         userLikes.add(idUser);
     }
 
-    public void deleteLike(Integer idUser) {
+    public void deleteLike(Long idUser) {
         userLikes.remove(idUser);
     }
+
 }

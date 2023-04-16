@@ -6,15 +6,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface UserStorage {
-    User create(User user);
+public interface UserDao {
+    void create(User user);
+
+    List<User> findAll();
 
     Optional<User> findById(Integer id);
 
     User update(User user);
 
-    List<User> getAllUsers();
+    void deleteById(Integer id);
 
-    List<User> getUsersByIds(Set<Integer> ids);
+    List<User> findUsersByIds(Set<Integer> ids);
+
+    Optional<User> findByLogin(String login);
 }
 

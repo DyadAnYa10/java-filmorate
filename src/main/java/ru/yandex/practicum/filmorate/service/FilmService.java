@@ -1,61 +1,67 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDao;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
-
-import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
-@Slf4j
-@RequiredArgsConstructor
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
+
+    private final FilmDao filmStorage;
     private final UserService userService;
 
-    public Film createFilm(@Valid @RequestBody Film film) {
-        log.info("Request add new Film");
-
-        Film createdFilm = filmStorage.create(film);
-
-        log.info("Added new Film {}", film);
-        return createdFilm;
-    }
-
-    public Film updateFilm(@RequestBody Film film) {
-        log.info("Request update film");
-        Film updatableFilm = filmStorage.update(film);
-        log.info("Updatable film {}", film);
-        return updatableFilm;
-    }
-
-    public Film getFilmById(Integer id) {
-        return filmStorage.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Film with id='" + id + "' not found"));
+    public FilmService(@Qualifier("filmRepository") FilmDao filmStorage, UserService userService) {
+        this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        return filmStorage.findAllFilm();
     }
 
-    public void addLikeByFilmId(Integer filmId, Integer userId) {
-        Film film = getFilmById(filmId);
-        film.addLike(userId);
+    public Film getFilmById(Long id) {
+        return filmStorage.findFilmById(id).orElseThrow(
+                () -> new NoSuchElementException("Film with id='" + id + "' not found"));
     }
 
-    public void deleteLikeByFilmId(Integer filmId, Integer userId) {
-        Film film = getFilmById(filmId);
+    public Film createFilm(Film film) {
+        return filmStorage.save(film);
+    }
+
+    public Film updateFilm(Film film) {
+        filmStorage.findFilmById(film.getId())
+                .orElseThrow(() -> new NoSuchElementException("Film with id='" + film.getId() + "' not found"));
+
+        return filmStorage.update(film);
+    }
+
+    public void addLikeByFilmId(Long filmId, Integer userId) {
+        filmStorage.findFilmById(filmId)
+                .orElseThrow(() -> new NoSuchElementException("Film with id='" + filmId + "' not found"));
+
         userService.getUserById(userId);
-        film.deleteLike(userId);
+        filmStorage.addLike(filmId, userId);
     }
 
-    public List<Film> getPopularFilms(Integer count) {
-        return filmStorage.findPopularFilms(count);
+    public void deleteLikeByFilmId(Long filmId, Integer userId) {
+        filmStorage.findFilmById(filmId)
+                .orElseThrow(() -> new NoSuchElementException("Film with id='" + filmId + "' not found"));
+
+        userService.getUserById(userId);
+        filmStorage.deleteLike(filmId, userId);
     }
+
+    public List<Film> getPopularFilms(int count) {
+        return filmStorage.findAllFilm()
+                .stream()
+                .sorted((o1, o2) -> o2.getUserLikes().size() - o1.getUserLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
 }
