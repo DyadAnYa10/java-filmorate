@@ -45,8 +45,8 @@ public class GenreRepository {
                 new RowMapper<Genre>() {
                     @Override
                     public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        return Genre.builder().
-                                id(rs.getLong("genre_id"))
+                        return Genre.builder()
+                                .id(rs.getLong("genre_id"))
                                 .build();
                     }
                 }, id);
